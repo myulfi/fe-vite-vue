@@ -1,10 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
     labelNewButton: String
-    , data: Array
-    , dataTotal: Number
+    , onNewButtonClick: { type: Function, required: false, default: () => { alert("Please define your function!") } }
+    , bulkOptionLoadingFlag: { type: Boolean, required: false, default: false }
+    , bulkOptionArray: Array
+    , dataArray: { type: Array, required: false, default: [] }
+    , columns: Array
+    , checkBoxArray: Array
+    , onCheckBox: { type: Function, required: false, default: () => { alert("Please define your function!") } }
+    , dataTotal: { type: Number, required: false, default: 0 }
     , limitPaginationButton: { type: Number, required: false, default: 7 }
     , onRender: Function
 })
@@ -13,8 +19,9 @@ const search = ref("");
 const currentPage = ref(1);
 const sizePage = ref(5);
 
-const pagesCount = Math.ceil(dataTotal / sizePage.value);
-const pages = Array.from({ length: pagesCount }, (_, i) => i + 1);
+const pages = computed(() => {
+    return Array.from({ length: Math.ceil(props.dataTotal / sizePage.value) }, (_, i) => i + 1);
+});
 const lengthArray = [5, 10, 25, 50, 100];
 
 function onPageChange(page, length, search) {
@@ -77,21 +84,20 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         <div class="clearfix">
             <div class="float-sm-start mb-2">
                 Show&nbsp;
-                <select className="p-1" v-model="sizePage"
-                    @change="onPageChange(currentPage, $event.target.value, search)">
+                <select class="p-1" v-model="sizePage" @change="onPageChange(1, $event.target.value, search)">
                     <option v-for="(length, index) in lengthArray" :key="index" :value="length">{{ length }}</option>
                 </select>
                 &nbsp;entires
             </div>
             <div class="float-sm-end d-grid d-sm-flex mb-2">
-                <input type="text" v-model="search" placeholder="Search" className="form-control form-control-sm"
+                <input type="text" v-model="search" placeholder="Search" class="form-control form-control-sm"
                     @keydown.enter="onPageChange(1, sizePage, search)" />
             </div>
         </div>
     </div>
     <div class="table-responsive">
-        <table className="table table-bordered table-hover my-1 align-middle">
-            <thead className="border border-bottom-0">
+        <table class="table table-bordered table-hover my-1 align-middle">
+            <thead class="border border-bottom-0">
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Description</th>
@@ -103,14 +109,14 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                 </tr>
             </thead>
             <tbody>
-                <tr v-if="data.length == 0">
+                <tr v-if="dataArray.length == 0">
                     <td colspan="4" class="text-center">
                         <div class="alert alert-danger mb-0">
                             Data Belum Tersedia!
                         </div>
                     </td>
                 </tr>
-                <tr v-else v-for="(datum, index) in data" :key="index">
+                <tr v-else v-for="(datum, index) in dataArray" :key="index">
                     <td>{{ datum.name }}</td>
                     <td>{{ datum.description }}</td>
                     <td>{{ datum.value }}</td>
@@ -137,23 +143,21 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         <div class="float-sm-end d-grid d-sm-flex mt-2">
             <ul class="pagination">
                 <li class="page-item d-none d-sm-block">
-                    <a v-if="currentPage === 1" className="page-link disabled">Previous</a>
-                    <a v-else className="page-link" @click="onPageChange(currentPage - 1, sizePage, search)"
-                        role="button">
+                    <a v-if="currentPage === 1" class="page-link disabled">Previous</a>
+                    <a v-else class="page-link" @click="onPageChange(currentPage - 1, sizePage, search)" role="button">
                         Previous
                     </a>
                 </li>
                 <li v-for="(page, index) in paginationButton(currentPage, pages.length, limitPaginationButton)"
-                    :key="index">
-                    <a v-if="page === currentPage || page === '...'" className="page-link">{{ page }}</a>
-                    <a v-else className="page-link" @click="onPageChange(page, sizePage, search)" role="button">
+                    :key="index" :class="page === currentPage ? 'page-item active' : 'page-item'">
+                    <a v-if="page === currentPage || page === '...'" class="page-link">{{ page }}</a>
+                    <a v-else class="page-link" @click="onPageChange(page, sizePage, search)" role="button">
                         {{ page }}
                     </a>
                 </li>
-                <li className="page-item d-none d-sm-block">
-                    <a v-if="currentPage === pages.length" className="page-link disabled">Next</a>
-                    <a v-else className="page-link" @click="onPageChange(currentPage + 1, sizePage, search)"
-                        role="button">
+                <li class="page-item d-none d-sm-block">
+                    <a v-if="currentPage === pages.length" class="page-link disabled">Next</a>
+                    <a v-else class="page-link" @click="onPageChange(currentPage + 1, sizePage, search)" role="button">
                         Next
                     </a>
                 </li>
