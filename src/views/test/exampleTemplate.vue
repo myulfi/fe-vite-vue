@@ -7,8 +7,21 @@ import Table from '../../components/Table.vue';
 //import api
 import api from '../../api';
 import Modal from '../../components/Modal.vue';
+import Input from '../../components/form/Input.vue';
+import Textarea from '../../components/form/Textarea.vue';
+import Select from '../../components/form/Select.vue';
+import Radio from '../../components/form/Radio.vue';
 
-//define state
+
+const exampleTemplateInitial = {
+    name: ''
+    , description: ''
+    , value: 0
+    , amount: 0
+    , date: ''
+    , activeFlag: null
+};
+
 const exampleTemplateArray = ref([]);
 const exampleTemplateDataTotalTable = ref(0);
 const exampleTemplateOptionColumnTable = ref([]);
@@ -19,6 +32,18 @@ const exampleTemplateEntryModal = ref({
     , submitIcon: ""
     , submitLoadingFlag: false
 });
+
+const exampleTemplateForm = ref(exampleTemplateInitial);
+const exampleTemplateFormError = ref([]);
+
+const onExampleTemplateFormChange = (e) => {
+    const { name, value } = e.target;
+    exampleTemplateForm.value = { ...exampleTemplateForm.value, [name]: value };
+    console.log(JSON.stringify(exampleTemplateForm.value))
+};
+
+const selectValueMap = [{ "key": 1, "value": "Satu" }, { "key": 2, "value": "Dua" }, { "key": 3, "value": "Tiga" }, { "key": 4, "value": "Empat" }];
+const yesNoMap = [{ "key": 1, "value": "Yes" }, { "key": 0, "value": "No" }];
 
 const exampleTemplateColumns = [
     {
@@ -82,7 +107,7 @@ const exampleTemplateColumns = [
 const exampleTemplateModalButton = [
     {
         label: exampleTemplateEntryModal.submitLabel
-        // , onClick : ""
+        , onClick: () => confirmDeleteExampleTemplate()
         , class: "btn-primary"
         , icon: exampleTemplateEntryModal.submitIcon
         , loadingFlag: exampleTemplateEntryModal.submitLoadingFlag
@@ -125,15 +150,15 @@ const entryExampleTemplate = async (id) => {
         await api.get(`/test/${id}/example-template.json`)
             .then(response => {
                 const exampleTemplate = response.data.data;
-                // setExampleTemplateForm({
-                //     id: exampleTemplate.id
-                //     , name: exampleTemplate.name
-                //     , description: exampleTemplate.description
-                //     , value: exampleTemplate.value
-                //     , amount: exampleTemplate.amount
-                //     , date: exampleTemplate.date
-                //     , activeFlag: exampleTemplate.activeFlag
-                // });
+                exampleTemplateForm.value = {
+                    id: exampleTemplate.id
+                    , name: exampleTemplate.name
+                    , description: exampleTemplate.description
+                    , value: exampleTemplate.value
+                    , amount: exampleTemplate.amount
+                    , date: exampleTemplate.date
+                    , activeFlag: exampleTemplate.activeFlag
+                };
             })
             .catch(function (error) {
 
@@ -184,7 +209,27 @@ const deleteExampleTemplate = async (id) => {
 <template>
     <div class="container mt-4 mb-4">
         <Modal id="modal_id" size="md" :title="exampleTemplateEntryModal.title"
-            :buttonArray="exampleTemplateModalButton" />
+            :buttonArray="exampleTemplateModalButton">
+            <Input label="Name" type="text" name="name" :value="exampleTemplateForm.name"
+                :onChange="onExampleTemplateFormChange" placeholder="Please input name"
+                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.name" />
+            <Textarea label="Description" name="description" rows="3" :value="exampleTemplateForm.description"
+                :onChange="onExampleTemplateFormChange" placeholder="Please input description"
+                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.description"></Textarea>
+            <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
+                :onChange="onExampleTemplateFormChange" placeholder="Please select value"
+                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
+            <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
+                :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
+                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
+            <Input label="Date" type="date" name="date" :value="exampleTemplateForm.date"
+                :onChange="onExampleTemplateFormChange" placeholder="Please input date"
+                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
+            <Radio label="Active Flag" name="activeFlag" :value="exampleTemplateForm.activeFlag" :map="yesNoMap"
+                :onChange="onExampleTemplateFormChange" className="col-md-6 col-sm-6 col-xs-12"
+                :error="exampleTemplateFormError.activeFlag" />
+
+        </Modal>
         <div class="row">
             <div class="col-md-12">
                 <div class="card border-0 rounded shadow">

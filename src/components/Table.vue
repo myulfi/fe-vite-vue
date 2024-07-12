@@ -124,7 +124,6 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                         <div v-else>
                             {{ datum[column.data] }}
                         </div>
-
                     </td>
                 </tr>
             </tbody>

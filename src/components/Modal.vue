@@ -1,12 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
-
 const props = defineProps({
     id: { type: String, required: false, default: "modal_id" }
     , size: { type: String, required: false, default: "xl" }
     , title: { type: String, required: false, default: "Form" }
     , buttonArray: Array
-    // , children
 })
 </script>
 
@@ -22,7 +19,7 @@ const props = defineProps({
                 <div class="modal-body">
                     <form>
                         <div class="row">
-                            <!-- {{ children }} -->
+                            <slot></slot>
                         </div>
                     </form>
                 </div>
@@ -30,7 +27,13 @@ const props = defineProps({
                     <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-dismiss="modal">
                         <span class="bi-x-lg">&nbsp;Close</span>
                     </button>
-                    <!-- {buttonArray} -->
+                    <button v-for="(button, index) in buttonArray" :key="index"
+                        :class="'btn btn-sm ' + button.class + ' rounded-sm shadow border-0 m-1'"
+                        :disabled="button.loadingFlag" @click="button.onClick">
+                        <span :class="button.loadingFlag ? 'spinner-grow spinner-grow-sm mx-2' : null" role="status"
+                            aria-hidden="true"></span>
+                        <span :className="button.icon">&nbsp;{{ button.label }}</span>
+                    </button>
                 </div>
             </div>
         </div>
