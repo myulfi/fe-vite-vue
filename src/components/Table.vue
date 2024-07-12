@@ -76,7 +76,8 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
     <div>
         <div class="clearfix">
             <div class="float-sm-start d-grid d-sm-flex mb-2">
-                <button class="btn btn-md btn-primary rounded border-0 shadow-sm" type="button" onClick="">
+                <button class="btn btn-md btn-primary rounded border-0 shadow-sm" type="button"
+                    @click="onNewButtonClick()">
                     <span class="bi-plus-circle">&nbsp;{{ labelNewButton }}</span>
                 </button>
             </div>
@@ -90,7 +91,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                 &nbsp;entires
             </div>
             <div class="float-sm-end d-grid d-sm-flex mb-2">
-                <input type="text" v-model="search" placeholder="Search" class="form-control form-control-sm"
+                <input type="text" autoFocus v-model="search" placeholder="Search" class="form-control form-control-sm"
                     @keydown.enter="onPageChange(1, sizePage, search)" />
             </div>
         </div>
@@ -99,40 +100,37 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         <table class="table table-bordered table-hover my-1 align-middle">
             <thead class="border border-bottom-0">
                 <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Value</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Created By</th>
-                    <th scope="col">Created Date</th>
-                    <th scope="col" style="width:15%">Option</th>
+                    <th v-for="(column, index) in columns" :key="index" scope="col" :class="column.class"
+                        :width="column.width + '%'">{{ column.name }}</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-if="dataArray.length == 0">
-                    <td colspan="4" class="text-center">
-                        <div class="alert alert-danger mb-0">
-                            Data Belum Tersedia!
-                        </div>
+                <tr v-if="dataArray.length === 0">
+                    <td :colspan="columns.length" class="text-center">
+                        Data not founded.
                     </td>
                 </tr>
                 <tr v-else v-for="(datum, index) in dataArray" :key="index">
-                    <td>{{ datum.name }}</td>
-                    <td>{{ datum.description }}</td>
-                    <td>{{ datum.value }}</td>
-                    <td>{{ datum.date }}</td>
-                    <td>{{ datum.createdBy }}</td>
-                    <td>{{ datum.createdDate }}</td>
-                    <td class="text-center">
-                        <!-- <router-link :to="{ name: 'posts.edit', params:{id: post.id} }" class="btn btn-sm btn-primary rounded-sm shadow border-0 me-2">EDIT</router-link> -->
-                        <!-- <button @click.prevent="deleteExampleTemplate(exampleTemplate.id)"
-                            class="btn btn-sm btn-danger rounded-sm shadow border-0">DELETE</button> -->
+                    <td v-for="(column, index) in columns" :key="index" :class="column.class">
+                        <div v-if="typeof column.render === 'function'">
+                            <button v-for="(object, index) in column.render(datum[column.data])" :key="index"
+                                :class="'btn btn-sm ' + object.class + ' rounded-sm shadow border-0 m-1'"
+                                :disabled="object.loadingFlag" @click="object.onClick">
+                                <span :class="object.loadingFlag ? 'spinner-grow spinner-grow-sm mx-2' : null"
+                                    role="status" aria-hidden="true"></span>
+                                <span :className="object.icon">&nbsp;{{ object.label }}</span>
+                            </button>
+                        </div>
+                        <div v-else>
+                            {{ datum[column.data] }}
+                        </div>
+
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div>
+    <div v-if="dataTotal > 0">
         <div class="float-sm-start d-grid d-sm-flex mt-2">
             Showing
             {{ ((currentPage - 1) * sizePage + 1) > dataTotal ? "0" : ((currentPage - 1) * sizePage) + 1 }}
@@ -141,7 +139,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
             of {{ dataTotal }} entries
         </div>
         <div class="float-sm-end d-grid d-sm-flex mt-2">
-            <ul class="pagination">
+            <ul v-if="pages.length > 1" class="pagination">
                 <li class="page-item d-none d-sm-block">
                     <a v-if="currentPage === 1" class="page-link disabled">Previous</a>
                     <a v-else class="page-link" @click="onPageChange(currentPage - 1, sizePage, search)" role="button">
