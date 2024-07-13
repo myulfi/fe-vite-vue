@@ -1,4 +1,6 @@
 <script setup>
+import Button from './form/Button.vue';
+
 const props = defineProps({
     id: { type: String, required: false, default: "modal_id" }
     , size: { type: String, required: false, default: "xl" }
@@ -27,13 +29,9 @@ const props = defineProps({
                     <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-dismiss="modal">
                         <span class="bi-x-lg">&nbsp;Close</span>
                     </button>
-                    <button v-for="(button, index) in buttonArray" :key="index"
-                        :class="'btn btn-sm ' + button.class + ' rounded-sm shadow border-0 m-1'"
-                        :disabled="button.loadingFlag" @click="button.onClick">
-                        <span :class="button.loadingFlag ? 'spinner-grow spinner-grow-sm mx-2' : null" role="status"
-                            aria-hidden="true"></span>
-                        <span :className="button.icon">&nbsp;{{ button.label }}</span>
-                    </button>
+                    <Button v-for="(button, index) in buttonArray" :key="index" :label="button.label"
+                        :className="button.class" :icon="button.icon" :loadingFlag="button.loadingFlag"
+                        :onClick="button.onClick"></Button>
                 </div>
             </div>
         </div>
