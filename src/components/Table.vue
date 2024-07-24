@@ -119,10 +119,8 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                         data-bs-toggle="dropdown">
                         <span :class="bulkOptionLoadingFlag ? 'spinner-border spinner-border-sm mx-2' : null"
                             role="status" aria-hidden="true"></span>
-                        <span class="bi-stack">
-                            &nbsp;{{ checkBoxArray?.length > 0 ? '(' + checkBoxArray?.length + ') ' : null }}
-                            Bulk Option
-                        </span>
+                        <span class="bi-stack">&nbsp;{{ checkBoxArray?.length > 0 ? '(' + checkBoxArray?.length + ')' :
+                            null }}Bulk Option</span>
                     </button>
                     <div class="dropdown-menu">
                         <Dropdown v-for="(bulkOption, index) in bulkOptionArray" :key="index" :label="bulkOption.label"
@@ -132,15 +130,13 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
             </div>
         </div>
         <div class="clearfix">
-            <div class="float-sm-start mb-2">
-                Show&nbsp;
-                <select class="p-1" v-model="sizePage" @change="onPageChange(1, $event.target.value, search)">
+            <div class="float-sm-start mb-2">Show&nbsp;<select class="p-1" v-model="sizePage"
+                    @change="onPageChange(1, $event.target.value, search)">
                     <option v-for="(length, index) in lengthArray" :key="index" :value="length">{{ length }}</option>
-                </select>
-                &nbsp;entires
+                </select>&nbsp;entires
             </div>
             <div class="float-sm-end d-grid d-sm-flex mb-2">
-                <input type="text" autoFocus v-model="search" placeholder="Search" class="form-control form-control-sm"
+                <input autoFocus type="text" v-model="search" placeholder="Search" class="form-control form-control-sm"
                     @keydown.enter="onPageChange(1, sizePage, search)" />
             </div>
         </div>

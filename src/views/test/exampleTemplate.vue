@@ -335,6 +335,9 @@ const deleteExampleTemplate = async (id) => {
         </Modal>
         <Dialog id="dialog_id" :type="dialog.type" :message="dialog.message" :onConfirm="dialog.onConfirm" />
         <Toast id="toast_id" :type="toast.type" :message="toast.message" />
+        <div className="row">
+            <h3><span className="bi-puzzle">&nbsp;Example</span></h3>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card border-0 rounded shadow">
