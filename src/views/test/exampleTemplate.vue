@@ -48,6 +48,7 @@ const exampleTemplateBulkOptionDropdown = ref([
 const exampleTemplateCheckBoxTableArray = ref([]);
 const exampleTemplateOptionColumnTable = ref([]);
 const exampleTemplateDataTotalTable = ref(0);
+const exampleTemplateTableLoadingFlag = ref(false);
 
 const exampleTemplateArray = ref([]);
 
@@ -159,6 +160,7 @@ onMounted(() => {
 });
 
 const getExampleTemplate = async (page = 1, length = 5, search = "", orderColumn = 1, orderDir = "asc") => {
+    exampleTemplateTableLoadingFlag.value = true;
     await api.get(`/test/example-template.json?start=${(page - 1) * length}&length=${length}&search%5Bvalue%5D=${search}`)
         .then(response => {
             const json = response.data;
@@ -171,6 +173,9 @@ const getExampleTemplate = async (page = 1, length = 5, search = "", orderColumn
                 return map;
             }, {});
         })
+        .finally(() => {
+            exampleTemplateTableLoadingFlag.value = false;
+        });
 }
 
 const entryExampleTemplate = async (id) => {
@@ -366,7 +371,8 @@ const deleteExampleTemplate = async (id) => {
                             :bulkOptionArray="exampleTemplateBulkOptionDropdown" :dataArray="exampleTemplateArray"
                             :columns="exampleTemplateColumns" :checkBoxArray="exampleTemplateCheckBoxTableArray"
                             :onCheckBox="exampleTemplateCheckBoxTableArray => { exampleTemplateCheckBoxTableArray.value = [...exampleTemplateCheckBoxTableArray]; }"
-                            :dataTotal="exampleTemplateDataTotalTable" :onRender="getExampleTemplate">
+                            :dataTotal="exampleTemplateDataTotalTable" :onRender="getExampleTemplate"
+                            :loadingFlag="exampleTemplateTableLoadingFlag">
                         </Table>
                     </div>
                 </div>

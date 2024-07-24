@@ -14,6 +14,7 @@ const props = defineProps({
     , dataTotal: { type: Number, required: false, default: 0 }
     , limitPaginationButton: { type: Number, required: false, default: 7 }
     , onRender: Function
+    , loadingFlag: { type: Boolean, required: false, default: false }
 });
 
 const checkBoxStateArray = computed(() => {
@@ -142,6 +143,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         </div>
     </div>
     <div class="table-responsive">
+        <div v-if="loadingFlag" class="spinner-border text-primary position-absolute top-50 start-50"></div>
         <table class="table table-bordered table-hover my-1 align-middle">
             <thead class="border border-bottom-0">
                 <tr>
