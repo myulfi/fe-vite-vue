@@ -13,6 +13,8 @@ import Select from '../../components/form/Select.vue';
 import Radio from '../../components/form/Radio.vue';
 import Dialog from '../../components/Dialog.vue';
 import Toast from '../../components/Toast.vue';
+import SelectFilter from '../../components/filter/SelectFilter.vue';
+import DateFilter from '../../components/filter/DateFilter.vue';
 
 const exampleTemplateInitial = {
     name: ''
@@ -21,6 +23,17 @@ const exampleTemplateInitial = {
     , amount: 0
     , date: ''
     , activeFlag: null
+};
+
+const exampleTemplateFilterTableTableInitial = {
+    value: 0
+};
+
+const exampleTemplateFilterTable = ref(exampleTemplateFilterTableTableInitial);
+
+const onExampleTemplateFilterTableChange = (e) => {
+    const { name, value } = e.target;
+    exampleTemplateFilterTable.value = { ...exampleTemplateFilterTable.value, [name]: value };
 };
 
 const exampleTemplateBulkOptionLoadingFlag = ref(false);
@@ -316,27 +329,33 @@ const deleteExampleTemplate = async (id) => {
             :buttonArray="exampleTemplateEntryButtonModal">
             <Input label="Name" type="text" name="name" :value="exampleTemplateForm.name"
                 :onChange="onExampleTemplateFormChange" placeholder="Please input name"
-                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.name" />
+                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.name" />
             <Textarea label="Description" name="description" rows="3" :value="exampleTemplateForm.description"
                 :onChange="onExampleTemplateFormChange" placeholder="Please input description"
-                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.description"></Textarea>
+                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.description"></Textarea>
             <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
                 :onChange="onExampleTemplateFormChange" placeholder="Please select value"
-                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
+                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
             <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
                 :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
-                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
+                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
             <Input label="Date" type="date" name="date" :value="exampleTemplateForm.date"
                 :onChange="onExampleTemplateFormChange" placeholder="Please input date"
-                className="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
+                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
             <Radio label="Active Flag" name="activeFlag" :value="exampleTemplateForm.activeFlag" :map="yesNoMap"
-                :onChange="onExampleTemplateFormChange" className="col-md-6 col-sm-6 col-xs-12"
+                :onChange="onExampleTemplateFormChange" class="col-md-6 col-sm-6 col-xs-12"
                 :error="exampleTemplateFormError.activeFlag" />
         </Modal>
         <Dialog id="dialog_id" :type="dialog.type" :message="dialog.message" :onConfirm="dialog.onConfirm" />
         <Toast id="toast_id" :type="toast.type" :message="toast.message" />
-        <div className="row">
-            <h3><span className="bi-puzzle">&nbsp;Example</span></h3>
+        <div class="row">
+            <h3><span class="bi-puzzle">&nbsp;Example</span></h3>
+        </div>
+        <div class="row">
+            <SelectFilter label="Value" name="value" :map="selectValueMap" :value="exampleTemplateFilterTable.value"
+                :onChange="onExampleTemplateFilterTableChange" delay="1" class="col-md-4 col-sm-6 col-xs-12" />
+            <DateFilter label="Date" name="date" :value="exampleTemplateFilterTable.date"
+                :onChange="onExampleTemplateFilterTableChange" delay="2" class="col-md-4 col-sm-6 col-xs-12" />
         </div>
         <div class="row">
             <div class="col-md-12">
