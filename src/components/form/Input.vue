@@ -6,13 +6,13 @@ const props = defineProps({
     , value: [String, Number]
     , onChange: Function
     , placeholder: String
-    , className: String
+    , class: String
     , error: String
 })
 </script>
 
 <template>
-    <div :class="'form-group mb-3' + className + ''">
+    <div :class="'form-group mb-3 ' + props.class + ''">
         <label class="form-label fw-bold">{{ label }}</label>
         <input class="form-control" :name="name" :type="type" :value="value" @change="onChange($event)"
             :placeholder="placeholder" />

@@ -30,7 +30,7 @@ const props = defineProps({
                         <span class="bi-x-lg">&nbsp;Close</span>
                     </button>
                     <Button v-for="(button, index) in buttonArray" :key="index" :label="button.label"
-                        :className="button.class" :icon="button.icon" :loadingFlag="button.loadingFlag"
+                        :class="button.class" :icon="button.icon" :loadingFlag="button.loadingFlag"
                         :onClick="button.onClick"></Button>
                 </div>
             </div>

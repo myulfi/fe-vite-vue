@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import Dropdown from './Dropdown.vue';
 
 const props = defineProps({
@@ -13,6 +13,7 @@ const props = defineProps({
     , onCheckBox: { type: Function, required: false, default: () => { alert("Please define your function!") } }
     , dataTotal: { type: Number, required: false, default: 0 }
     , limitPaginationButton: { type: Number, required: false, default: 7 }
+    , filter: Object
     , onRender: Function
     , loadingFlag: { type: Boolean, required: false, default: false }
 });
@@ -31,6 +32,10 @@ const pages = computed(() => {
     return Array.from({ length: Math.ceil(props.dataTotal / sizePage.value) }, (_, i) => i + 1);
 });
 const lengthArray = [5, 10, 25, 50, 100];
+
+watchEffect(() => {
+    onPageChange(1, sizePage.value, search.value);
+});
 
 function onPageChange(page, length, search) {
     currentPage.value = page;

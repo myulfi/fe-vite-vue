@@ -15,9 +15,9 @@ const props = defineProps({
 </script>
 
 <template>
-    <Filter :label="label" :icon="icon" :class="class" :delay="delay">
-        <select class="form-control" :name="name" :value="value" @change="onChange($event)">
-            <option value="" disabled>{{ placeholder }}</option>
+    <Filter :label="label" :icon="icon" :class="props.class" :delay="delay">
+        <select class="form-select" :name="name" :value="value" @change="onChange($event)">
+            <option value="">{{ placeholder }}</option>
             <option v-for="(object, index) in map" :key="index" :value="object.key">{{ object.value }}
             </option>
         </select>

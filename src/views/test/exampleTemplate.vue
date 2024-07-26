@@ -15,6 +15,7 @@ import Dialog from '../../components/Dialog.vue';
 import Toast from '../../components/Toast.vue';
 import SelectFilter from '../../components/filter/SelectFilter.vue';
 import DateFilter from '../../components/filter/DateFilter.vue';
+import RangeFilter from '../../components/filter/RangeFilter.vue';
 
 const exampleTemplateInitial = {
     name: ''
@@ -26,7 +27,9 @@ const exampleTemplateInitial = {
 };
 
 const exampleTemplateFilterTableTableInitial = {
-    value: 0
+    value: 0,
+    date: "",
+    range: 0,
 };
 
 const exampleTemplateFilterTable = ref(exampleTemplateFilterTableTableInitial);
@@ -153,7 +156,7 @@ var dialogObject;
 var modalObject;
 
 onMounted(() => {
-    getExampleTemplate();
+    //getExampleTemplate();
     toastObject = new bootstrap.Toast(document.getElementById("toast_id"), "data-bs-animation-delay");
     dialogObject = new bootstrap.Modal(document.getElementById("dialog_id"), { backdrop: false, keyboard: true, focus: true });
     modalObject = new bootstrap.Modal(document.getElementById("modal_id"), { backdrop: false, keyboard: true, focus: true });
@@ -161,7 +164,19 @@ onMounted(() => {
 
 const getExampleTemplate = async (page = 1, length = 5, search = "", orderColumn = 1, orderDir = "asc") => {
     exampleTemplateTableLoadingFlag.value = true;
-    await api.get(`/test/example-template.json?start=${(page - 1) * length}&length=${length}&search%5Bvalue%5D=${search}`)
+    await api.get(
+        "/test/example-template.json",
+        {
+            params: {
+                "start": (page - 1) * length,
+                "length": length,
+                "search": search,
+                "value": exampleTemplateFilterTable.value.value,
+                "date": exampleTemplateFilterTable.value.date,
+                "range": exampleTemplateFilterTable.value.range,
+            }
+        }
+    )
         .then(response => {
             const json = response.data;
             exampleTemplateArray.value = json.data;
@@ -357,10 +372,13 @@ const deleteExampleTemplate = async (id) => {
             <h3><span class="bi-puzzle">&nbsp;Example</span></h3>
         </div>
         <div class="row">
-            <SelectFilter label="Value" name="value" :map="selectValueMap" :value="exampleTemplateFilterTable.value"
-                :onChange="onExampleTemplateFilterTableChange" delay="1" class="col-md-4 col-sm-6 col-xs-12" />
+            <SelectFilter label="Value" name="value" :map="selectValueMap"
+                :value="exampleTemplateFilterTable.value.value" :onChange="onExampleTemplateFilterTableChange"
+                placeholder="All" :delay="1" class="col-md-4 col-sm-6 col-xs-12" />
             <DateFilter label="Date" name="date" :value="exampleTemplateFilterTable.date"
-                :onChange="onExampleTemplateFilterTableChange" delay="2" class="col-md-4 col-sm-6 col-xs-12" />
+                :onChange="onExampleTemplateFilterTableChange" :delay="2" class="col-md-4 col-sm-6 col-xs-12" />
+            <RangeFilter label="Range" name="range" :value="exampleTemplateFilterTable.range"
+                :onChange="onExampleTemplateFilterTableChange" :delay="3" class="col-md-4 col-sm-6 col-xs-12" />
         </div>
         <div class="row">
             <div class="col-md-12">
@@ -371,8 +389,8 @@ const deleteExampleTemplate = async (id) => {
                             :bulkOptionArray="exampleTemplateBulkOptionDropdown" :dataArray="exampleTemplateArray"
                             :columns="exampleTemplateColumns" :checkBoxArray="exampleTemplateCheckBoxTableArray"
                             :onCheckBox="exampleTemplateCheckBoxTableArray => { exampleTemplateCheckBoxTableArray.value = [...exampleTemplateCheckBoxTableArray]; }"
-                            :dataTotal="exampleTemplateDataTotalTable" :onRender="getExampleTemplate"
-                            :loadingFlag="exampleTemplateTableLoadingFlag">
+                            :dataTotal="exampleTemplateDataTotalTable" :filter="exampleTemplateFilterTable"
+                            :onRender="getExampleTemplate" :loadingFlag="exampleTemplateTableLoadingFlag">
                         </Table>
                     </div>
                 </div>
