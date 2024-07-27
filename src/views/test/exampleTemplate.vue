@@ -94,6 +94,7 @@ const exampleTemplateColumns = [
         data: "name"
         , name: "Name"
         , class: "min-mobile text-nowrap"
+        , orderable: true
     }
     , {
         data: "description"
@@ -122,7 +123,8 @@ const exampleTemplateColumns = [
         data: "createdDate"
         , name: "Created Date"
         , class: "min-desktop text-nowrap"
-        , width: 10
+        , width: 15
+        , orderable: true
     }
     , {
         data: "id"
@@ -149,6 +151,8 @@ const exampleTemplateColumns = [
     }
 ];
 
+const exampleTemplateOrder = [[5, "desc"]];
+
 const toast = ref({});
 const dialog = ref({});
 var toastObject;
@@ -162,7 +166,7 @@ onMounted(() => {
     modalObject = new bootstrap.Modal(document.getElementById("modal_id"), { backdrop: false, keyboard: true, focus: true });
 });
 
-const getExampleTemplate = async (page = 1, length = 5, search = "", orderColumn = 1, orderDir = "asc") => {
+const getExampleTemplate = async (page = 1, length = 5, search = "", order = []) => {
     exampleTemplateTableLoadingFlag.value = true;
     await api.get(
         "/test/example-template.json",
@@ -171,6 +175,8 @@ const getExampleTemplate = async (page = 1, length = 5, search = "", orderColumn
                 "start": (page - 1) * length,
                 "length": length,
                 "search": search,
+                "orderColumn": order.length > 1 ? order[0] : null,
+                "orderDir": order.length > 1 ? order[1] : null,
                 "value": exampleTemplateFilterTable.value.value,
                 "date": exampleTemplateFilterTable.value.date,
                 "range": exampleTemplateFilterTable.value.range,
@@ -387,7 +393,8 @@ const deleteExampleTemplate = async (id) => {
                         <Table labelNewButton="New" :onNewButtonClick="entryExampleTemplate"
                             :bulkOptionLoadingFlag="exampleTemplateBulkOptionLoadingFlag"
                             :bulkOptionArray="exampleTemplateBulkOptionDropdown" :dataArray="exampleTemplateArray"
-                            :columns="exampleTemplateColumns" :checkBoxArray="exampleTemplateCheckBoxTableArray"
+                            :columns="exampleTemplateColumns" :order="exampleTemplateOrder"
+                            :checkBoxArray="exampleTemplateCheckBoxTableArray"
                             :onCheckBox="exampleTemplateCheckBoxTableArray => { exampleTemplateCheckBoxTableArray.value = [...exampleTemplateCheckBoxTableArray]; }"
                             :dataTotal="exampleTemplateDataTotalTable" :filter="exampleTemplateFilterTable"
                             :onRender="getExampleTemplate" :loadingFlag="exampleTemplateTableLoadingFlag">
