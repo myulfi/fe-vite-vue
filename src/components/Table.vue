@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue'
 import Dropdown from './Dropdown.vue';
+import { CommonConstants } from '../constants/CommonConstants.vue';
 
 const props = defineProps({
     labelNewButton: String
@@ -13,6 +14,7 @@ const props = defineProps({
     , checkBoxArray: Array
     , onCheckBox: { type: Function, required: false, default: () => { alert("Please define your function!") } }
     , dataTotal: { type: Number, required: false, default: 0 }
+    , initialSizePage: { type: Number, required: false, default: 10 }
     , limitPaginationButton: { type: Number, required: false, default: 7 }
     , filter: Object
     , onRender: Function
@@ -25,11 +27,16 @@ const checkBoxStateArray = computed(() => {
     })
 });
 
+const columnShow = props.columns.filter(column => { return column.minDevice !== CommonConstants.NONE; });
+const columnHide = props.columns.filter(column => { return column.minDevice !== undefined && column.minDevice !== CommonConstants.MOBILE; });
+
 const search = ref("");
 const currentOrder = ref(props.order);
 const orderColumn = ref([]);
+const detailRow = ref(props.dataArray.map(() => false));
+
 const currentPage = ref(1);
-const sizePage = ref(5);
+const sizePage = ref(props.initialSizePage);
 
 const pages = computed(() => {
     return Array.from({ length: Math.ceil(props.dataTotal / sizePage.value) }, (_, i) => i + 1);
@@ -39,21 +46,21 @@ const lengthArray = [5, 10, 25, 50, 100];
 watchEffect(() => {
     if (orderColumn.value.length === 0) {
         var array = new Array();
-        for (var i = 0; i < props.columns.length; i++) {
-            array.push(props.columns[i].orderable ? "bi-three-dots-vertical" : null);
+        for (var i = 0; i < columnShow.length; i++) {
+            array.push(columnShow[i].orderable ? "bi-three-dots-vertical" : null);
         }
 
         if (props.order.length > 0) {
             for (var i = 0; i < props.order.length; i++) {
                 if ("asc" === props.order[i][1]) {
                     array[props.order[i][0]] = "bi-sort-down-alt";
-                    currentOrder.value = [props.columns[props.order[i][0]]["data"], "asc"];
-                    props.onRender(currentPage.value, sizePage.value, search.value, [props.columns[props.order[i][0]]["data"], "asc"]);
+                    currentOrder.value = [columnShow[props.order[i][0]]["data"], "asc"];
+                    props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "asc"]);
                     break;
                 } else if ("desc" === props.order[i][1]) {
                     array[props.order[i][0]] = "bi-sort-down";
-                    currentOrder.value[props.columns[props.order[i][0]]["data"], "desc"];
-                    props.onRender(currentPage.value, sizePage.value, search.value, [props.columns[props.order[i][0]]["data"], "desc"]);
+                    currentOrder.value[columnShow[props.order[i][0]]["data"], "desc"];
+                    props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "desc"]);
                     break;
                 }
             }
@@ -117,6 +124,10 @@ const onCheckBoxSingle = (id) => {
 
     props.onCheckBox(props.checkBoxArray);
 };
+
+const showDetail = (index) => {
+    detailRow.value = { ...detailRow.value, [index]: !detailRow.value[index] };
+}
 
 const paginationRange = (len, start) => {
     var end;
@@ -206,7 +217,8 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                             :checked="checkBoxStateArray.length > 0 && checkBoxStateArray.every(id => new Set(checkBoxArray).has(id))"
                             @change="onCheckBoxAll" />
                     </th>
-                    <th v-for="(column, index) in columns" :key="index" scope="col" :class="column.class"
+                    <th v-for="(column, index) in columnShow" :key="index" scope="col"
+                        :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')"
                         :width="column.width != null ? column.width + '%' : null">
                         {{ column.name }}
                         <i v-if="orderColumn[index] != null" :class="'float-end ' + orderColumn[index]" role="button"
@@ -216,30 +228,45 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
             </thead>
             <tbody>
                 <tr v-if="dataArray.length === 0">
-                    <td :colspan="columns.length + (checkBoxArray != undefined ? 1 : 0)" class="text-center">
+                    <td :colspan="columnShow.length + (checkBoxArray != undefined ? 1 : 0)" class="text-center">
                         Data not founded.
                     </td>
                 </tr>
-                <tr v-else v-for="(datum, index) in dataArray" :key="index">
-                    <td v-if="checkBoxArray != undefined" class="text-center">
-                        <input type="checkbox" :checked="checkBoxArray.indexOf(datum.id) >= 0"
-                            @change="onCheckBoxSingle(datum.id)" />
-                    </td>
-                    <td v-for="(column, index) in columns" :key="index" :class="column.class">
-                        <div v-if="typeof column.render === 'function'">
-                            <button v-for="(object, index) in column.render(datum[column.data])" :key="index"
+                <template v-else v-for="(datum, indexRow) in dataArray" :key="indexRow">
+                    <tr>
+                        <td v-if="checkBoxArray != undefined" class="text-center">
+                            <input type="checkbox" :checked="checkBoxArray.indexOf(datum.id) >= 0"
+                                @change="onCheckBoxSingle(datum.id)" />
+                        </td>
+                        <td v-for="(column, index) in columnShow" :key="index"
+                            :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')">
+                            <span v-if="index == 0"
+                                :class="(detailRow[indexRow] ? 'bi-dash-circle' : 'bi-plus-circle') + ' me-2 max-desktop'"
+                                role="button" @click="showDetail(indexRow)"></span>
+                            <button v-if="typeof column.render === 'function'"
+                                v-for="(object, index) in column.render(datum[column.data])" :key="index"
                                 :class="'btn btn-sm ' + object.class + ' rounded-sm shadow border-0 m-1'"
                                 :disabled="object.loadingFlag" @click="object.onClick">
                                 <span :class="object.loadingFlag ? 'spinner-grow spinner-grow-sm mx-2' : null"
                                     role="status" aria-hidden="true"></span>
                                 <span :class="object.icon">&nbsp;{{ object.label }}</span>
                             </button>
-                        </div>
-                        <div v-else>
-                            {{ datum[column.data] }}
-                        </div>
-                    </td>
-                </tr>
+                            <template v-else>
+                                {{ datum[column.data] }}
+                            </template>
+                        </td>
+                    </tr>
+                    <tr v-if="columnHide.length > 0 && detailRow[indexRow]" class="max-desktop">
+                        <td :colSpan="columnShow.length + (checkBoxArray != undefined ? 1 : 0)">
+                            <div v-for="(column, index) in columnHide" :key="index"
+                                :class="'border-bottom mx-2 px-2 py-2 ' + (column.minDevice == CommonConstants.TABLET ? 'max-tablet' : column.minDevice == CommonConstants.DESKTOP ? 'max-desktop' : '')">
+                                <label class="fw-bold me-2">{{ column.name }}</label>
+                                {{ typeof column.render === 'function' ? column.render(datum[column.data]) :
+                                    datum[column.data] }}
+                            </div>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
@@ -276,3 +303,35 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         </div>
     </div>
 </template>
+
+<style>
+@media (max-width: 1240px) {
+    .min-tv {
+        display: none;
+    }
+}
+
+@media (max-width: 1024px) {
+    .min-desktop {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .min-tablet {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .max-desktop {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .max-tablet {
+        display: none;
+    }
+}
+</style>

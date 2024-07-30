@@ -3,6 +3,7 @@
 //import ref and onMounted
 import { ref, onMounted } from 'vue';
 import Table from '../../components/Table.vue';
+import { CommonConstants } from '../../constants/CommonConstants.vue';
 
 //import api
 import api from '../../api';
@@ -93,38 +94,44 @@ const exampleTemplateColumns = [
     {
         data: "name"
         , name: "Name"
-        , class: "min-mobile text-nowrap"
+        , class: "text-nowrap"
         , orderable: true
+        , minDevice: CommonConstants.MOBILE
     }
     , {
         data: "description"
         , name: "Description"
-        , class: "min-tablet text-nowrap"
+        , class: "text-nowrap"
+        , minDevice: CommonConstants.TABLET
     }
     , {
         data: "value"
         , name: "Value"
-        , class: "min-tablet text-nowrap"
+        , class: "text-nowrap"
         , width: 10
+        , minDevice: CommonConstants.TABLET
     }
     , {
         data: "date"
         , name: "Date"
-        , class: "min-desktop text-nowrap"
+        , class: "text-nowrap"
         , width: 10
+        , minDevice: CommonConstants.DESKTOP
     }
     , {
         data: "createdBy"
         , name: "Created By"
-        , class: "min-desktop text-nowrap"
+        , class: "text-nowrap"
         , width: 10
+        , minDevice: CommonConstants.DESKTOP
     }
     , {
         data: "createdDate"
         , name: "Created Date"
-        , class: "min-desktop text-nowrap"
+        , class: "text-nowrap"
         , width: 15
         , orderable: true
+        , minDevice: CommonConstants.DESKTOP
     }
     , {
         data: "id"
