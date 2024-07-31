@@ -29,6 +29,7 @@ const checkBoxStateArray = computed(() => {
 
 const columnShow = props.columns.filter(column => { return column.minDevice !== CommonConstants.NONE; });
 const columnHide = props.columns.filter(column => { return column.minDevice !== undefined && column.minDevice !== CommonConstants.MOBILE; });
+const columnAlwaysHide = props.columns.filter(column => { return column.minDevice === CommonConstants.NONE; });
 
 const search = ref("");
 const currentOrder = ref(props.order);
@@ -241,7 +242,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                         <td v-for="(column, index) in columnShow" :key="index"
                             :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')">
                             <span v-if="index == 0"
-                                :class="(detailRow[indexRow] ? 'bi-dash-circle' : 'bi-plus-circle') + ' me-2 max-desktop'"
+                                :class="(detailRow[indexRow] ? 'bi-dash-circle' : 'bi-plus-circle') + ' me-2 ' + (columnAlwaysHide.length === 0 ? 'max-desktop' : null)"
                                 role="button" @click="showDetail(indexRow)"></span>
                             <button v-if="typeof column.render === 'function'"
                                 v-for="(object, index) in column.render(datum[column.data])" :key="index"
@@ -256,7 +257,8 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                             </template>
                         </td>
                     </tr>
-                    <tr v-if="columnHide.length > 0 && detailRow[indexRow]" class="max-desktop">
+                    <tr v-if="columnHide.length > 0 && detailRow[indexRow]"
+                        :class="columnAlwaysHide.length === 0 ? 'max-desktop' : null">
                         <td :colSpan="columnShow.length + (checkBoxArray != undefined ? 1 : 0)">
                             <div v-for="(column, index) in columnHide" :key="index"
                                 :class="'border-bottom mx-2 px-2 py-2 ' + (column.minDevice == CommonConstants.TABLET ? 'max-tablet' : column.minDevice == CommonConstants.DESKTOP ? 'max-desktop' : '')">
