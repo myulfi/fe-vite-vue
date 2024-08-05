@@ -66,6 +66,7 @@ watchEffect(() => {
                 }
             }
         } else {
+            //detailRow.value = props.dataArray.map(() => false);
             props.onRender(currentPage.value, sizePage.value, search.value);
         }
         orderColumn.value = array;
@@ -77,6 +78,7 @@ watchEffect(() => {
 function onPageChange(page, length, search) {
     currentPage.value = page;
     sizePage.value = length;
+    //detailRow.value = props.dataArray.map(() => false);
     props.onRender(page, length, search, currentOrder.value);
 }
 
@@ -84,6 +86,7 @@ const onOrderChange = (data, index) => {
     var array = new Array();
     for (var i = 0; i < orderColumn.value.length; i++) {
         if (index === i) {
+            //detailRow.value = props.dataArray.map(() => false);
             if (orderColumn.value[i] === "bi-sort-down") {
                 array.push("bi-sort-down-alt");
                 currentOrder.value = [data, "asc"];
@@ -242,10 +245,10 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                         <td v-for="(column, index) in columnShow" :key="index"
                             :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')">
                             <span v-if="index == 0"
-                                :class="(detailRow[indexRow] ? 'bi-dash-circle' : 'bi-plus-circle') + ' me-2 ' + (columnAlwaysHide.length === 0 ? 'max-desktop' : null)"
+                                :class="(detailRow[indexRow] ? 'bi-dash-circle-fill' : 'bi-plus-circle-fill') + ' text-primary me-2 ' + (columnAlwaysHide.length === 0 ? 'max-desktop' : null)"
                                 role="button" @click="showDetail(indexRow)"></span>
                             <button v-if="typeof column.render === 'function'"
-                                v-for="(object, index) in column.render(datum[column.data])" :key="index"
+                                v-for="(object, index) in column.render(datum[column.data], datum)" :key="index"
                                 :class="'btn btn-sm ' + object.class + ' rounded-sm shadow border-0 m-1'"
                                 :disabled="object.loadingFlag" @click="object.onClick">
                                 <span :class="object.loadingFlag ? 'spinner-grow spinner-grow-sm mx-2' : null"
