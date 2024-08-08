@@ -103,9 +103,11 @@ const onOrderChange = (data, index) => {
     orderColumn.value = array;
 };
 
-const onCheckBoxAll = event => {
+const onCheckBoxAll = () => {
+    const currentCheckBoxStateArray = checkBoxStateArray.value.length;
+    const currentCheckBoxArray = props.dataArray.filter(datum => props.checkBoxArray.includes(datum.id)).length;
     props.dataArray.forEach(function (dataArray) {
-        if (event.target.checked) {
+        if (currentCheckBoxStateArray !== currentCheckBoxArray) {
             if (props.checkBoxArray.includes(dataArray.id) === false) {
                 props.checkBoxArray.push(dataArray.id);
             }
@@ -217,9 +219,9 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
             <thead class="border border-bottom-0">
                 <tr>
                     <th v-if="checkBoxArray !== undefined" scope="col" class="text-center">
-                        <input type="checkbox" id="checkall"
-                            :checked="checkBoxStateArray.length > 0 && checkBoxStateArray.every(id => new Set(checkBoxArray).has(id))"
-                            @change="onCheckBoxAll" />
+                        <span
+                            :class="props.dataArray.filter(datum => checkBoxArray.includes(datum.id)).length === 0 ? 'bi-square' : props.dataArray.filter(datum => checkBoxArray.includes(datum.id)).length === checkBoxStateArray.length ? 'bi-plus-square-fill' : 'bi-dash-square-fill'"
+                            role="button" @click="onCheckBoxAll"></span>
                     </th>
                     <th v-for="(column, index) in columnShow" :key="index" scope="col"
                         :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')"
@@ -239,8 +241,8 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                 <template v-else v-for="(datum, indexRow) in dataArray" :key="indexRow">
                     <tr>
                         <td v-if="checkBoxArray != undefined" class="text-center">
-                            <input type="checkbox" :checked="checkBoxArray.indexOf(datum.id) >= 0"
-                                @change="onCheckBoxSingle(datum.id)" />
+                            <span :class="checkBoxArray.indexOf(datum.id) >= 0 ? 'bi-check-square-fill' : 'bi-square'"
+                                role="button" @click="onCheckBoxSingle(datum.id)"></span>
                         </td>
                         <td v-for="(column, index) in columnShow" :key="index"
                             :class="column.class + ' ' + (column.minDevice == CommonConstants.DESKTOP ? 'min-desktop' : column.minDevice == CommonConstants.TABLET ? 'min-tablet' : '')">
