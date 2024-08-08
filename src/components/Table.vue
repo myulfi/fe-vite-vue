@@ -179,7 +179,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
         <div class="clearfix">
             <div v-if="labelNewButton !== undefined" class="float-sm-start d-grid d-sm-flex mb-2">
                 <button class="btn btn-md btn-primary rounded border-0 shadow-sm" type="button"
-                    @click="onNewButtonClick()">
+                    @click="onNewButtonClick(false)">
                     <span class="bi-plus-circle">&nbsp;{{ labelNewButton }}</span>
                 </button>
             </div>

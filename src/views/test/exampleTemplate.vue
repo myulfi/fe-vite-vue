@@ -17,6 +17,7 @@ import Toast from '../../components/Toast.vue';
 import SelectFilter from '../../components/filter/SelectFilter.vue';
 import DateFilter from '../../components/filter/DateFilter.vue';
 import RangeFilter from '../../components/filter/RangeFilter.vue';
+import Label from '../../components/form/Label.vue';
 
 const exampleTemplateInitial = {
     name: ''
@@ -26,6 +27,8 @@ const exampleTemplateInitial = {
     , date: ''
     , activeFlag: null
 };
+
+const exampleTemplateStateModal = ref(CommonConstants.MODAL_IS_ENTRY)
 
 const exampleTemplateFilterTableTableInitial = {
     value: 0,
@@ -140,10 +143,10 @@ const exampleTemplateColumns = [
         , render: function (data) {
             return [
                 {
-                    label: "Edit"
-                    , onClick: () => entryExampleTemplate(data)
+                    label: "View"
+                    , onClick: () => viewExampleTemplate(data)
                     , class: "btn-primary"
-                    , icon: "bi-pencil"
+                    , icon: "bi-list-ul"
                     , loadingFlag: exampleTemplateOptionColumnTable.value[data]?.updatedButtonFlag
                 }
                 , {
@@ -206,10 +209,10 @@ const getExampleTemplate = async (page = 1, length = 5, search = "", order = [])
         });
 }
 
-const entryExampleTemplate = async (id) => {
+const viewExampleTemplate = async (id) => {
     exampleTemplateForm.value = exampleTemplateInitial;
-    exampleTemplateFormError.value = [];
     if (id !== undefined) {
+        exampleTemplateStateModal.value = CommonConstants.MODAL_IS_VIEW
         exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: true } };
         await api.get(`/test/${id}/example-template.json`)
             .then(response => {
@@ -229,19 +232,39 @@ const entryExampleTemplate = async (id) => {
             })
             .finally(() => {
                 exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: false } };
-                exampleTemplateEntryTitleModal.value = "Edit";
+                exampleTemplateEntryTitleModal.value = "View";
                 exampleTemplateEntryButtonModal.value[0] = {
                     ...exampleTemplateEntryButtonModal.value[0]
-                    , label: "Update"
-                    , icon: "bi-arrow-repeat"
+                    , label: "Edit"
+                    , onClick: () => entryExampleTemplate(true)
+                    , icon: "bi-pencil"
                     , loadingFlag: false
                 };
             });
+    }
+
+    modalObject.show();
+}
+
+const entryExampleTemplate = (haveContentFlag) => {
+    exampleTemplateStateModal.value = CommonConstants.MODAL_IS_ENTRY
+    exampleTemplateFormError.value = [];
+    if (haveContentFlag) {
+        exampleTemplateEntryTitleModal.value = "Edit";
+        exampleTemplateEntryButtonModal.value[0] = {
+            ...exampleTemplateEntryButtonModal.value[0]
+            , label: "Update"
+            , onClick: () => confirmStoreExampleTemplate()
+            , icon: "bi-arrow-repeat"
+            , loadingFlag: false
+        };
     } else {
+        exampleTemplateForm.value = exampleTemplateInitial;
         exampleTemplateEntryTitleModal.value = "Add";
         exampleTemplateEntryButtonModal.value[0] = {
             ...exampleTemplateEntryButtonModal.value[0]
             , label: "Save"
+            , onClick: () => confirmStoreExampleTemplate()
             , icon: "bi-bookmark"
             , loadingFlag: false
         };
@@ -253,7 +276,7 @@ const entryExampleTemplate = async (id) => {
 const confirmStoreExampleTemplate = () => {
     if (exampleTemplateValidate(exampleTemplateForm.value)) {
         dialog.value = {
-            message: "Are you sure to create?"
+            message: exampleTemplateForm.value.id === undefined ? "Are you sure to create?" : "Are you sure to update?"
             , type: "confirmation"
             , onConfirm: (e) => storeExampleTemplate(e)
         };
@@ -360,26 +383,38 @@ const deleteExampleTemplate = async (id) => {
     <div class="container mt-4 mb-4">
         <Modal id="modal_id" size="md" :title="exampleTemplateEntryTitleModal"
             :buttonArray="exampleTemplateEntryButtonModal">
-            <Input label="Name" type="text" name="name" :value="exampleTemplateForm.name"
-                :onChange="onExampleTemplateFormChange" placeholder="Please input name"
-                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.name" />
-            <Textarea label="Description" name="description" rows="3" :value="exampleTemplateForm.description"
-                :onChange="onExampleTemplateFormChange" placeholder="Please input description"
-                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.description"></Textarea>
-            <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
-                :onChange="onExampleTemplateFormChange" placeholder="Please select value"
-                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
-            <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
-                :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
-                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
-            <Input label="Date" type="date" name="date" :value="exampleTemplateForm.date"
-                :onChange="onExampleTemplateFormChange" placeholder="Please input date"
-                class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
-            <Radio label="Active Flag" name="activeFlag" :value="exampleTemplateForm.activeFlag" :map="yesNoMap"
-                :onChange="onExampleTemplateFormChange" class="col-md-6 col-sm-6 col-xs-12"
-                :error="exampleTemplateFormError.activeFlag" />
+            <template v-if="CommonConstants.MODAL_IS_ENTRY == exampleTemplateStateModal">
+                <Input label="Name" type="text" name="name" :value="exampleTemplateForm.name"
+                    :onChange="onExampleTemplateFormChange" placeholder="Please input name"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.name" />
+                <Textarea label="Description" name="description" rows="3" :value="exampleTemplateForm.description"
+                    :onChange="onExampleTemplateFormChange" placeholder="Please input description"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.description"></Textarea>
+                <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
+                    :onChange="onExampleTemplateFormChange" placeholder="Please select value"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
+                <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
+                    :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
+                <Input label="Date" type="date" name="date" :value="exampleTemplateForm.date"
+                    :onChange="onExampleTemplateFormChange" placeholder="Please input date"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
+                <Radio label="Active Flag" name="activeFlag" :value="exampleTemplateForm.activeFlag" :map="yesNoMap"
+                    :onChange="onExampleTemplateFormChange" class="col-md-6 col-sm-6 col-xs-12"
+                    :error="exampleTemplateFormError.activeFlag" />
+            </template>
+            <template v-else-if="CommonConstants.MODAL_IS_VIEW == exampleTemplateStateModal">
+                <Label text="Name" :value="exampleTemplateForm.name" class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Description" :value="exampleTemplateForm.description"
+                    class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Value" :value="exampleTemplateForm.value" class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Amount" :value="exampleTemplateForm.amount" class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Date" :value="exampleTemplateForm.date" class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Active Flag" :value="exampleTemplateForm.activeFlag"
+                    class="col-md-6 col-sm-6 col-xs-12"></Label>
+            </template>
         </Modal>
-        <Dialog id="dialog_id" :type="dialog.type" :message="dialog.message" :onConfirm="dialog.onConfirm" />
+        <Dialog id="dialog_id" :type="dialog.type" :message="dialog.message" :onConfirm="dialog.onConfirm"></Dialog>
         <Toast id="toast_id" :type="toast.type" :message="toast.message" />
         <div class="row">
             <h3><span class="bi-puzzle">&nbsp;Example</span></h3>
