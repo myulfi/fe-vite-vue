@@ -268,9 +268,8 @@ const entryExampleTemplate = (haveContentFlag) => {
             , icon: "bi-bookmark"
             , loadingFlag: false
         };
+        modalObject.show();
     }
-
-    modalObject.show();
 }
 
 const confirmStoreExampleTemplate = () => {
