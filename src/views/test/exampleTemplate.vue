@@ -6,7 +6,7 @@ import Table from '../../components/Table.vue';
 import { CommonConstants } from '../../constants/CommonConstants.vue';
 
 //import api
-import api from '../../api';
+import { api, apiRequest } from '../../api';
 import Modal from '../../components/Modal.vue';
 import Input from '../../components/form/Input.vue';
 import Textarea from '../../components/form/Textarea.vue';
@@ -26,6 +26,7 @@ const exampleTemplateInitial = {
     , amount: 0
     , date: ''
     , activeFlag: null
+    , version: 0
 };
 
 const exampleTemplateStateModal = ref(CommonConstants.MODAL_IS_ENTRY)
@@ -170,43 +171,42 @@ var dialogObject;
 var modalObject;
 
 onMounted(() => {
-    //getExampleTemplate();
+    // getExampleTemplate();
     toastObject = new bootstrap.Toast(document.getElementById("toast_id"), "data-bs-animation-delay");
     dialogObject = new bootstrap.Modal(document.getElementById("dialog_id"), { backdrop: false, keyboard: true, focus: true });
     modalObject = new bootstrap.Modal(document.getElementById("modal_id"), { backdrop: false, keyboard: true, focus: true });
 });
 
-const getExampleTemplate = async (page = 1, length = 5, search = "", order = []) => {
+const getExampleTemplate = async (page = 1, length = 5, search = "", order = ["createdDate", "desc"]) => {
     exampleTemplateTableLoadingFlag.value = true;
-    await api.get(
-        "/test/example-template.json",
-        {
-            params: {
-                "start": (page - 1) * length,
-                "length": length,
-                "search": search,
-                "orderColumn": order.length > 1 ? order[0] : null,
-                "orderDir": order.length > 1 ? order[1] : null,
-                "value": exampleTemplateFilterTable.value.value,
-                "date": exampleTemplateFilterTable.value.date,
-                "range": exampleTemplateFilterTable.value.range,
-            }
-        }
-    )
-        .then(response => {
-            const json = response.data;
-            exampleTemplateArray.value = json.data;
-            exampleTemplateDataTotalTable.value = json.recordsTotal;
 
-            exampleTemplateOptionColumnTable.value = json.data.reduce(function (map, obj) {
-                //map[obj.id] = obj.name;
-                map[obj.id] = { "updatedButtonFlag": false, "deletedButtonFlag": false };
-                return map;
-            }, {});
-        })
-        .finally(() => {
-            exampleTemplateTableLoadingFlag.value = false;
-        });
+    try {
+        const params = {
+            "start": (page - 1) * length,
+            "length": length,
+            "search": search,
+            "orderColumn": order.length > 1 ? order[0] : null,
+            "orderDir": order.length > 1 ? order[1] : null,
+            "value": exampleTemplateFilterTable.value.value,
+            "date": exampleTemplateFilterTable.value.date,
+            "range": exampleTemplateFilterTable.value.range,
+        }
+
+        const response = await apiRequest(CommonConstants.METHOD_IS_GET, "/test/example-template.json", params)
+        const json = response.data;
+        exampleTemplateArray.value = json.data;
+        exampleTemplateDataTotalTable.value = json.recordsTotal;
+        exampleTemplateOptionColumnTable.value = json.data.reduce(function (map, obj) {
+            //map[obj.id] = obj.name;
+            map[obj.id] = { "updatedButtonFlag": false, "deletedButtonFlag": false };
+            return map;
+        }, {});
+    } catch (error) {
+        toast.value = { type: "failed", message: error.message };
+        toastObject.show();
+    } finally {
+        exampleTemplateTableLoadingFlag.value = false;
+    }
 }
 
 const viewExampleTemplate = async (id) => {
@@ -214,36 +214,37 @@ const viewExampleTemplate = async (id) => {
     if (id !== undefined) {
         exampleTemplateStateModal.value = CommonConstants.MODAL_IS_VIEW
         exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: true } };
-        await api.get(`/test/${id}/example-template.json`)
-            .then(response => {
-                const exampleTemplate = response.data.data;
-                exampleTemplateForm.value = {
-                    id: exampleTemplate.id
-                    , name: exampleTemplate.name
-                    , description: exampleTemplate.description
-                    , value: exampleTemplate.value
-                    , amount: exampleTemplate.amount
-                    , date: exampleTemplate.date
-                    , activeFlag: exampleTemplate.activeFlag
-                };
-            })
-            .catch(function (error) {
-                toast.value = { type: "failed", message: error };
-            })
-            .finally(() => {
-                exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: false } };
-                exampleTemplateEntryTitleModal.value = "View";
-                exampleTemplateEntryButtonModal.value[0] = {
-                    ...exampleTemplateEntryButtonModal.value[0]
-                    , label: "Edit"
-                    , onClick: () => entryExampleTemplate(true)
-                    , icon: "bi-pencil"
-                    , loadingFlag: false
-                };
-            });
-    }
 
-    modalObject.show();
+        try {
+            const response = await apiRequest(CommonConstants.METHOD_IS_GET, `/test/${id}/example-template.json`)
+            const exampleTemplate = response.data.data;
+            exampleTemplateForm.value = {
+                id: exampleTemplate.id
+                , name: exampleTemplate.name
+                , description: exampleTemplate.description
+                , value: exampleTemplate.value
+                , amount: exampleTemplate.amount
+                , date: exampleTemplate.date
+                , activeFlag: exampleTemplate.activeFlag
+                , version: exampleTemplate.version
+            };
+
+            exampleTemplateEntryTitleModal.value = "View";
+            exampleTemplateEntryButtonModal.value[0] = {
+                ...exampleTemplateEntryButtonModal.value[0]
+                , label: "Edit"
+                , onClick: () => entryExampleTemplate(true)
+                , icon: "bi-pencil"
+                , loadingFlag: false
+            };
+            modalObject.show();
+        } catch (error) {
+            toast.value = { type: "failed", message: error.message };
+            toastObject.show();
+        } finally {
+            exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: false } };
+        }
+    }
 }
 
 const entryExampleTemplate = (haveContentFlag) => {
@@ -291,29 +292,28 @@ const storeExampleTemplate = async () => {
             , loadingFlag: true
         };
 
-        await api.post(
-            '/test/example-template.json'
-            , JSON.stringify(exampleTemplateForm.value)
-            , { headers: { 'Content-Type': 'application/json' } }
-        )
-            .then((json) => {
-                if (json.data.status === "success") {
-                    getExampleTemplate();
-                }
-                toast.value = { type: json.data.status, message: "Submitted successfully" };
-            })
-            .catch((error) => {
-                toast.value = { type: "failed", message: error };
-                exampleTemplateFormError.value = error.response.data;
-            })
-            .finally(() => {
-                toastObject.show();
-                exampleTemplateEntryButtonModal.value[0] = {
-                    ...exampleTemplateEntryButtonModal.value[0]
-                    , loadingFlag: false
-                };
-                bootstrap.Modal.getInstance(document.getElementById('modal_id')).hide();
-            });
+        try {
+            const json = await apiRequest(
+                exampleTemplateForm.value.id === undefined ? CommonConstants.METHOD_IS_POST : CommonConstants.METHOD_IS_PATCH
+                , exampleTemplateForm.value.id === undefined ? '/test/example-template.json' : `/test/${exampleTemplateForm.value.id}/example-template.json`
+                , JSON.stringify(exampleTemplateForm.value)
+            )
+
+            if (json.data.status === "success") {
+                getExampleTemplate();
+            }
+            toast.value = { type: json.data.status, message: json.data.message };
+            bootstrap.Modal.getInstance(document.getElementById('modal_id')).hide();
+        } catch (error) {
+            toast.value = { type: "failed", message: error.message };
+            exampleTemplateFormError.value = error.response.data;
+        } finally {
+            toastObject.show();
+            exampleTemplateEntryButtonModal.value[0] = {
+                ...exampleTemplateEntryButtonModal.value[0]
+                , loadingFlag: false
+            };
+        }
     }
 }
 
@@ -349,31 +349,25 @@ const deleteExampleTemplate = async (id) => {
         exampleTemplateBulkOptionLoadingFlag.value = true;
     }
 
-    await api.delete(
-        `/test/${id !== undefined ? id : exampleTemplateCheckBoxTableArray.value.join("")}/example-template.json`
-        , null
-        , { headers: { 'Content-Type': 'application/json' } }
-    )
-        .then(function (json) {
-            if (json.data.status === "success") {
-                getExampleTemplate();
-                if (id === undefined) {
-                    exampleTemplateCheckBoxTableArray.value = [];
-                }
+    try {
+        const json = await apiRequest(CommonConstants.METHOD_IS_DELETE, `/test/${id !== undefined ? id : exampleTemplateCheckBoxTableArray.join("")}/example-template.json`)
+        if (json.data.status === "success") {
+            getExampleTemplate();
+            if (id === undefined) {
+                exampleTemplateCheckBoxTableArray.value = [];
             }
-            toast.value = { type: json.data.status, message: json.data.message };
-        })
-        .catch(function (error) {
-            toast.value = { type: "failed", message: error };
-        })
-        .finally(() => {
-            if (id !== undefined) {
-                exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { deletedButtonFlag: false } };
-            } else {
-                exampleTemplateBulkOptionLoadingFlag.value = false;
-            }
-            toastObject.show();
-        });
+        }
+        toast.value = { type: json.data.status, message: json.data.message };
+    } catch (error) {
+        toast.value = { type: "failed", message: error.message };
+    } finally {
+        if (id !== undefined) {
+            exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { deletedButtonFlag: false } };
+        } else {
+            exampleTemplateBulkOptionLoadingFlag.value = false;
+        }
+        toastObject.show();
+    }
 }
 
 </script>
