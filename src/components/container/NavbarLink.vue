@@ -9,7 +9,7 @@ const props = defineProps({
     <ul :class="level === 0 ? 'navbar-nav me-auto mb-2 mb-lg-0' : 'dropdown-menu'">
         <li v-for="(datum, index) in data" :key="index"
             :class="'nav-item ' + (datum.children?.length > 0 ? 'dropdown' : null)">
-            <router-link v-if="datum.children === undefined" :to="{ path: datum.path }"
+            <router-link v-if="datum.children?.length === 0" :to="{ path: datum.path }"
                 :class="level === 0 ? 'nav-link' : 'dropdown-item'">
                 <i :class="datum.icon"></i>&nbsp;{{ datum.name }}
             </router-link>

@@ -1,153 +1,36 @@
 <script setup>
 import Navbar from './components/container/Navbar.vue';
 import Footer from './components/container/Footer.vue';
+import Login from './views/login.vue';
+import { ref, watchEffect } from 'vue';
+import { apiRequest } from './api';
+import { CommonConstants } from './constants/CommonConstants.vue';
 
-const menuArray = [
-  {
-    "sequence": 1,
-    "color": "00aa00",
-    "name": "Home",
-    "icon": "bi-house-door",
-    "path": "/home"
-  },
-  {
-    "sequence": 10,
-    "color": "D43F3A",
-    "name": "Master",
-    "icon": "bi-files",
-    "children": [
-      {
-        "sequence": 1,
-        "color": "null",
-        "name": "Zone",
-        "icon": "bi-pin-map",
-        "path": "/master/zone"
-      }
-    ]
-  },
-  {
-    "sequence": 25,
-    "color": "08b5fb",
-    "name": "External",
-    "icon": "bi-arrow-90deg-right",
-    "children": [
-      {
-        "sequence": 1,
-        "color": "E7E7E7",
-        "name": "Server",
-        "icon": "bi-hdd-rack",
-        "path": "/external-data/server"
-      },
-      {
-        "sequence": 2,
-        "color": "E7E7E7",
-        "name": "Database",
-        "icon": "bi-database",
-        "path": "/external-data/database"
-      },
-      {
-        "sequence": 3,
-        "color": "E7E7E7",
-        "name": "API",
-        "icon": "bi-plugin",
-        "path": "/external-data/api"
-      }
-    ]
-  },
-  {
-    "sequence": 30,
-    "color": "ffc40d",
-    "name": "Command",
-    "icon": "bi-shield-lock",
-    "children": [
-      {
-        "sequence": 1,
-        "color": "E7E7E7",
-        "name": "Monitoring",
-        "icon": "bi-laptop",
-        "path": "/command/monitoring"
-      },
-      {
-        "sequence": 2,
-        "color": "E7E7E7",
-        "children": [
-          {
-            "sequence": 1,
-            "color": "E7E7E7",
-            "name": "Menu",
-            "icon": "bi-diagram-3",
-            "path": "/command/menu"
-          },
-          {
-            "sequence": 2,
-            "color": "E7E7E7",
-            "name": "Role",
-            "icon": "bi-file-ruled",
-            "path": "/command/role"
-          },
-          {
-            "sequence": 3,
-            "color": "E7E7E7",
-            "name": "User",
-            "icon": "bi-person",
-            "path": "/command/user"
-          }
-        ],
-        "name": "Access",
-        "icon": "bi-lock",
-        "path": "/command/access"
-      },
-      {
-        "sequence": 3,
-        "color": "E7E7E7",
-        "name": "Configuration",
-        "icon": "bi-gear",
-        "children": [
-          {
-            "sequence": 1,
-            "color": "E7E7E7",
-            "name": "Properties",
-            "icon": "bi-file-text",
-            "path": "/command/properties"
-          },
-          {
-            "sequence": 2,
-            "color": "null",
-            "name": "Language",
-            "icon": "bi-translate",
-            "path": "/command/language"
-          },
-          {
-            "sequence": 3,
-            "color": "null",
-            "name": "Procedure",
-            "icon": "bi-arrow-right",
-            "path": "/command/procedure"
-          },
-          {
-            "sequence": 4,
-            "color": "E7E7E7",
-            "name": "Email Scheduler",
-            "icon": "bi-envelope",
-            "path": "/command/email-scheduler"
-          }
-        ]
-      }
-    ],
-  },
-  {
-    "sequence": 99,
-    "color": "E7E7E7",
-    "name": "Example",
-    "icon": "bi-puzzle",
-    "path": "/test/example-template"
+const accessToken = ref(localStorage.getItem("accessToken"));
+const menuList = ref([]);
+
+const getMenu = async () => {
+  if (accessToken.value !== null) {
+    try {
+      const response = await apiRequest(CommonConstants.METHOD_IS_GET, "/command/menu.json")
+      menuList.value = response.data.data;
+    } catch (error) { }
   }
-];
+}
+
+watchEffect(() => {
+  getMenu();
+})
+
+document.title = import.meta.env.VITE_APP_TITLE;
 </script>
 <template>
-  <div>
-    <Navbar :data="menuArray" />
+  <div v-if="accessToken !== null">
+    <Navbar :data="menuList" />
     <router-view></router-view>
     <Footer></Footer>
+  </div>
+  <div v-else>
+    <Login />
   </div>
 </template>

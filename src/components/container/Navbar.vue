@@ -1,9 +1,22 @@
 <script setup>
 import NavbarLink from './NavbarLink.vue';
+import { CommonConstants } from '../../constants/CommonConstants.vue';
+import { apiRequest } from '../../api';
 
 const props = defineProps({
     data: { type: Array, required: false, default: [] }
 })
+
+const doLogout = async (e) => {
+    try {
+        await apiRequest(CommonConstants.METHOD_IS_POST, '/remove-token.json')
+    } catch (error) {
+
+    } finally {
+        localStorage.removeItem("accessToken");
+        window.location.reload(false);
+    }
+}
 </script>
 
 <template>
@@ -20,7 +33,7 @@ const props = defineProps({
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <NavbarLink :data="data" :level="0" />
                 <div class="d-flex">
-                    <button class="btn btn-outline-dark" type="button">
+                    <button class="btn btn-outline-dark" type="button" @click="(e) => doLogout(e)">
                         <span class="bi-arrow-right-square">&nbsp;&nbsp;Logout</span>
                     </button>
                 </div>

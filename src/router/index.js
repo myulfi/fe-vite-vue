@@ -9,7 +9,7 @@ const routes = [
         component: () => import( /* webpackChunkName: "home" */ '../views/home.vue')
     },
     {
-        path: '/home',
+        path: '/home.html',
         name: 'home',
         component: () => import( /* webpackChunkName: "home" */ '../views/home.vue')
     },
@@ -29,7 +29,7 @@ const routes = [
         component: () => import( /* webpackChunkName: "home" */ '../views/dashboard.vue'),
     },
     {
-        path: '/test/example-template',
+        path: '/test/example-template.html',
         name: 'example-template',
         component: () => import( /* webpackChunkName: "home" */ '../views/test/exampleTemplate.vue'),
     },
