@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Dropdown from './Dropdown.vue';
 import { CommonConstants } from '../constants/CommonConstants.vue';
 
@@ -44,41 +44,41 @@ const pages = computed(() => {
 });
 const lengthArray = [5, 10, 25, 50, 100];
 
-watchEffect(() => {
-    if (orderColumn.value.length === 0) {
-        var array = new Array();
-        for (var i = 0; i < columnShow.length; i++) {
-            array.push(columnShow[i].orderable ? "bi-three-dots-vertical" : null);
-        }
-
-        if (props.order.length > 0) {
-            for (var i = 0; i < props.order.length; i++) {
-                if ("asc" === props.order[i][1]) {
-                    array[props.order[i][0]] = "bi-sort-down-alt";
-                    currentOrder.value = [columnShow[props.order[i][0]]["data"], "asc"];
-                    props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "asc"]);
-                    break;
-                } else if ("desc" === props.order[i][1]) {
-                    array[props.order[i][0]] = "bi-sort-down";
-                    currentOrder.value[columnShow[props.order[i][0]]["data"], "desc"];
-                    props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "desc"]);
-                    break;
-                }
-            }
-        } else {
-            //detailRow.value = props.dataArray.map(() => false);
-            props.onRender(currentPage.value, sizePage.value, search.value);
-        }
-        orderColumn.value = array;
-    } else {
-        onPageChange(1, sizePage.value, search.value, currentOrder.value);
+onMounted(() => {
+    var array = new Array();
+    for (var i = 0; i < columnShow.length; i++) {
+        array.push(columnShow[i].orderable ? "bi-three-dots-vertical" : null);
     }
+
+    if (props.order.length > 0) {
+        for (var i = 0; i < props.order.length; i++) {
+            if ("asc" === props.order[i][1]) {
+                array[props.order[i][0]] = "bi-sort-down-alt";
+                currentOrder.value = [columnShow[props.order[i][0]]["data"], "asc"];
+                props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "asc"]);
+                break;
+            } else if ("desc" === props.order[i][1]) {
+                array[props.order[i][0]] = "bi-sort-down";
+                currentOrder.value = [columnShow[props.order[i][0]]["data"], "desc"];
+                props.onRender(currentPage.value, sizePage.value, search.value, [columnShow[props.order[i][0]]["data"], "desc"]);
+                break;
+            }
+        }
+    } else {
+        detailRow.value = props.dataArray.map(() => false);
+        props.onRender(currentPage.value, sizePage.value, search.value);
+    }
+    orderColumn.value = array;
+})
+
+watch(() => props.filter, () => {
+    onPageChange(1, sizePage.value, search.value);
 });
 
 function onPageChange(page, length, search) {
     currentPage.value = page;
     sizePage.value = length;
-    //detailRow.value = props.dataArray.map(() => false);
+    detailRow.value = props.dataArray.map(() => false);
     props.onRender(page, length, search, currentOrder.value);
 }
 
@@ -86,7 +86,7 @@ const onOrderChange = (data, index) => {
     var array = new Array();
     for (var i = 0; i < orderColumn.value.length; i++) {
         if (index === i) {
-            //detailRow.value = props.dataArray.map(() => false);
+            detailRow.value = props.dataArray.map(() => false);
             if (orderColumn.value[i] === "bi-sort-down") {
                 array.push("bi-sort-down-alt");
                 currentOrder.value = [data, "asc"];

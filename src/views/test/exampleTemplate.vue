@@ -25,7 +25,7 @@ const exampleTemplateInitial = {
     name: ''
     , description: ''
     , value: 0
-    , valueMultiple: []
+    //, valueMultiple: []
     , amount: 0
     , date: ''
     , activeFlag: null
@@ -58,6 +58,7 @@ const exampleTemplateBulkOptionDropdown = ref([
 
 const exampleTemplateCheckBoxTableArray = ref([]);
 const exampleTemplateOptionColumnTable = ref([]);
+const exampleTemplateAttributeTable = ref();
 const exampleTemplateDataTotalTable = ref(0);
 const exampleTemplateTableLoadingFlag = ref(false);
 
@@ -90,7 +91,9 @@ const selectValueMap = [
     { "key": 5, "value": "Lima" },
     { "key": 6, "value": "Enam" },
     { "key": 7, "value": "Tujuh" },
-    { "key": 8, "value": "Delapan" }
+    { "key": 8, "value": "Delapan" },
+    { "key": 9, "value": "Sembilan" },
+    { "key": 10, "value": "Sepuluh" },
 ];
 const yesNoMap = [{ "key": 1, "value": "Yes" }, { "key": 0, "value": "No" }];
 
@@ -189,20 +192,22 @@ onMounted(() => {
     modalObject = new bootstrap.Modal(document.getElementById("modal_id"), { backdrop: false, keyboard: true, focus: true });
 });
 
-const getExampleTemplate = async (page = 1, length = 5, search = "", order = ["createdDate", "desc"]) => {
+const getExampleTemplate = async (options) => {
     exampleTemplateTableLoadingFlag.value = true;
 
     try {
         const params = {
-            "start": (page - 1) * length,
-            "length": length,
-            "search": search,
-            "orderColumn": order.length > 1 ? order[0] : null,
-            "orderDir": order.length > 1 ? order[1] : null,
+            "start": (options.page - 1) * options.length,
+            "length": options.length,
+            "search": options.search,
+            "orderColumn": options.order.length > 1 ? options.order[0] : null,
+            "orderDir": options.order.length > 1 ? options.order[1] : null,
             "value": exampleTemplateFilterTable.value.value,
             "date": exampleTemplateFilterTable.value.date,
             "range": exampleTemplateFilterTable.value.range,
         }
+
+        exampleTemplateAttributeTable.value = options;
 
         const response = await apiRequest(CommonConstants.METHOD_IS_GET, "/test/example-template.json", params)
         const json = response.data;
@@ -312,7 +317,7 @@ const storeExampleTemplate = async () => {
             )
 
             if (json.data.status === "success") {
-                getExampleTemplate();
+                getExampleTemplate(exampleTemplateAttributeTable.value);
             }
             toast.value = { type: json.data.status, message: json.data.message };
             bootstrap.Modal.getInstance(document.getElementById('modal_id')).hide();
@@ -364,7 +369,7 @@ const deleteExampleTemplate = async (id) => {
     try {
         const json = await apiRequest(CommonConstants.METHOD_IS_DELETE, `/test/${id !== undefined ? id : exampleTemplateCheckBoxTableArray.join("")}/example-template.json`)
         if (json.data.status === "success") {
-            getExampleTemplate();
+            getExampleTemplate(exampleTemplateAttributeTable.value);
             if (id === undefined) {
                 exampleTemplateCheckBoxTableArray.value = [];
             }
@@ -398,10 +403,10 @@ const deleteExampleTemplate = async (id) => {
                 <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
                     :onChange="onExampleTemplateFormChange" placeholder="Please select value"
                     class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
-                <SelectMultiple label="Value" name="multipleValue" :map="selectValueMap"
+                <!-- <SelectMultiple label="Value" name="multipleValue" :map="selectValueMap"
                     :valueMultiple="exampleTemplateForm.valueMultiple" :liveSearch="true" :actionBox="true" :dataSize=5
                     :onChange="onExampleTemplateFormChange" placeholder="Please select value"
-                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value" />
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value" /> -->
                 <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
                     :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
                     class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
@@ -450,7 +455,8 @@ const deleteExampleTemplate = async (id) => {
                             :checkBoxArray="exampleTemplateCheckBoxTableArray"
                             :onCheckBox="exampleTemplateCheckBoxTableArray => { exampleTemplateCheckBoxTableArray.value = [...exampleTemplateCheckBoxTableArray]; }"
                             :dataTotal="exampleTemplateDataTotalTable" :filter="exampleTemplateFilterTable"
-                            :onRender="getExampleTemplate" :loadingFlag="exampleTemplateTableLoadingFlag">
+                            :onRender="(page, length, search, order) => getExampleTemplate({ page: page, length: length, search: search, order: order })"
+                            :loadingFlag="exampleTemplateTableLoadingFlag">
                         </Table>
                     </div>
                 </div>
