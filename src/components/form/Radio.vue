@@ -14,12 +14,12 @@ const props = defineProps({
 <template>
     <div :class="'form-group mb-3 ' + props.class">
         <label class="form-label fw-bold">{{ label }}</label>
-        <div class="py-1">
-            <div v-for="(object, index) in map" :key="index" class="form-check form-check-inline">
-                <input class="form-check-input" :name="name" type="radio" :value="object.key"
-                    :checked="parseInt(value) === object.key" @change="onChange($event)" />
-                <label class="form-check-label">{{ object.value }}</label>
-            </div>
+        <div>
+            <template v-for="(object, index) in map" :key="index">
+                <input type="radio" class="btn-check" :name="name" :value="object.key" :id="name + '_' + object.key"
+                    :checked="parseInt(value) === object.key" @change="onChange($event)" autoComplete="off" />
+                <label class="btn btn-outline-secondary me-1" :for="name + '_' + object.key">{{ object.value }}</label>
+            </template>
         </div>
         <small v-if="error" class="text-danger mt-1 px-1">{{ error }}</small>
     </div>

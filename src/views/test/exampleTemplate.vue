@@ -4,6 +4,7 @@
 import { ref, onMounted } from 'vue';
 import Table from '../../components/Table.vue';
 import { CommonConstants } from '../../constants/CommonConstants.vue';
+import { formatDate } from '../../function/DateHelper.vue';
 
 //import api
 import { api, apiRequest } from '../../api';
@@ -18,11 +19,13 @@ import SelectFilter from '../../components/filter/SelectFilter.vue';
 import DateFilter from '../../components/filter/DateFilter.vue';
 import RangeFilter from '../../components/filter/RangeFilter.vue';
 import Label from '../../components/form/Label.vue';
+import SelectMultiple from '../../components/form/SelectMultiple.vue';
 
 const exampleTemplateInitial = {
     name: ''
     , description: ''
     , value: 0
+    , valueMultiple: []
     , amount: 0
     , date: ''
     , activeFlag: null
@@ -79,7 +82,16 @@ const onExampleTemplateFormChange = (e) => {
     exampleTemplateForm.value = { ...exampleTemplateForm.value, [name]: value };
 };
 
-const selectValueMap = [{ "key": 1, "value": "Satu" }, { "key": 2, "value": "Dua" }, { "key": 3, "value": "Tiga" }, { "key": 4, "value": "Empat" }];
+const selectValueMap = [
+    { "key": 1, "value": "Satu" },
+    { "key": 2, "value": "Dua" },
+    { "key": 3, "value": "Tiga" },
+    { "key": 4, "value": "Empat" },
+    { "key": 5, "value": "Lima" },
+    { "key": 6, "value": "Enam" },
+    { "key": 7, "value": "Tujuh" },
+    { "key": 8, "value": "Delapan" }
+];
 const yesNoMap = [{ "key": 1, "value": "Yes" }, { "key": 0, "value": "No" }];
 
 const exampleTemplateValidate = (data) => {
@@ -148,7 +160,7 @@ const exampleTemplateColumns = [
                     , onClick: () => viewExampleTemplate(data)
                     , class: "btn-primary"
                     , icon: "bi-list-ul"
-                    , loadingFlag: exampleTemplateOptionColumnTable.value[data]?.updatedButtonFlag
+                    , loadingFlag: exampleTemplateOptionColumnTable.value[data]?.viewedButtonFlag
                 }
                 , {
                     label: "Delete"
@@ -198,7 +210,7 @@ const getExampleTemplate = async (page = 1, length = 5, search = "", order = ["c
         exampleTemplateDataTotalTable.value = json.recordsTotal;
         exampleTemplateOptionColumnTable.value = json.data.reduce(function (map, obj) {
             //map[obj.id] = obj.name;
-            map[obj.id] = { "updatedButtonFlag": false, "deletedButtonFlag": false };
+            map[obj.id] = { "viewedButtonFlag": false, "deletedButtonFlag": false };
             return map;
         }, {});
     } catch (error) {
@@ -213,7 +225,7 @@ const viewExampleTemplate = async (id) => {
     exampleTemplateForm.value = exampleTemplateInitial;
     if (id !== undefined) {
         exampleTemplateStateModal.value = CommonConstants.MODAL_IS_VIEW
-        exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: true } };
+        exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { viewedButtonFlag: true } };
 
         try {
             const response = await apiRequest(CommonConstants.METHOD_IS_GET, `/test/${id}/example-template.json`)
@@ -242,7 +254,7 @@ const viewExampleTemplate = async (id) => {
             toast.value = { type: "failed", message: error.message };
             toastObject.show();
         } finally {
-            exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { updatedButtonFlag: false } };
+            exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { viewedButtonFlag: false } };
         }
     }
 }
@@ -386,10 +398,15 @@ const deleteExampleTemplate = async (id) => {
                 <Select label="Value" name="value" :map="selectValueMap" :value="exampleTemplateForm.value"
                     :onChange="onExampleTemplateFormChange" placeholder="Please select value"
                     class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value"></Select>
+                <SelectMultiple label="Value" name="multipleValue" :map="selectValueMap"
+                    :valueMultiple="exampleTemplateForm.valueMultiple" :liveSearch="true" :actionBox="true" :dataSize=5
+                    :onChange="onExampleTemplateFormChange" placeholder="Please select value"
+                    class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.value" />
                 <Input label="Amount" type="number" name="amount" :value="exampleTemplateForm.amount"
                     :onChange="onExampleTemplateFormChange" placeholder="Please input amount"
                     class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.amount" />
-                <Input label="Date" type="date" name="date" :value="exampleTemplateForm.date"
+                <Input label="Date" type="date" name="date"
+                    :value="formatDate(new Date(exampleTemplateForm.date), 'yyyy-MM-dd')"
                     :onChange="onExampleTemplateFormChange" placeholder="Please input date"
                     class="col-md-6 col-sm-6 col-xs-12" :error="exampleTemplateFormError.date" />
                 <Radio label="Active Flag" name="activeFlag" :value="exampleTemplateForm.activeFlag" :map="yesNoMap"
@@ -402,7 +419,8 @@ const deleteExampleTemplate = async (id) => {
                     class="col-md-6 col-sm-6 col-xs-12"></Label>
                 <Label text="Value" :value="exampleTemplateForm.value" class="col-md-6 col-sm-6 col-xs-12"></Label>
                 <Label text="Amount" :value="exampleTemplateForm.amount" class="col-md-6 col-sm-6 col-xs-12"></Label>
-                <Label text="Date" :value="exampleTemplateForm.date" class="col-md-6 col-sm-6 col-xs-12"></Label>
+                <Label text="Date" :value="formatDate(new Date(exampleTemplateForm.date), 'yyyy-MM-dd')"
+                    class="col-md-6 col-sm-6 col-xs-12"></Label>
                 <Label text="Active Flag" :value="exampleTemplateForm.activeFlag"
                     class="col-md-6 col-sm-6 col-xs-12"></Label>
             </template>
