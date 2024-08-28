@@ -268,7 +268,7 @@ const paginationButton = (currentPage, pageAmount, limitButton) => {
                             <div v-for="(column, index) in columnHide" :key="index"
                                 :class="'border-bottom mx-2 px-2 py-2 ' + (column.minDevice == CommonConstants.TABLET ? 'max-tablet' : column.minDevice == CommonConstants.DESKTOP ? 'max-desktop' : '')">
                                 <label class="fw-bold me-2">{{ column.name }}</label>
-                                {{ typeof column.render === 'function' ? column.render(datum[column.data]) :
+                                {{ typeof column.render === 'function' ? column.render(datum[column.data], datum) :
                                     datum[column.data] }}
                             </div>
                         </td>

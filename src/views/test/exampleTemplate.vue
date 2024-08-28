@@ -219,7 +219,7 @@ const getExampleTemplate = async (options) => {
             return map;
         }, {});
     } catch (error) {
-        toast.value = { type: "failed", message: error.message };
+        toast.value = { type: "failed", message: error.response.data.message ?? error.message };
         toastObject.show();
     } finally {
         exampleTemplateTableLoadingFlag.value = false;
@@ -318,11 +318,11 @@ const storeExampleTemplate = async () => {
 
             if (json.data.status === "success") {
                 getExampleTemplate(exampleTemplateAttributeTable.value);
+                bootstrap.Modal.getInstance(document.getElementById('modal_id')).hide();
             }
             toast.value = { type: json.data.status, message: json.data.message };
-            bootstrap.Modal.getInstance(document.getElementById('modal_id')).hide();
         } catch (error) {
-            toast.value = { type: "failed", message: error.message };
+            toast.value = { type: "failed", message: error.response.data.message ?? error.message };
             exampleTemplateFormError.value = error.response.data;
         } finally {
             toastObject.show();
@@ -376,7 +376,7 @@ const deleteExampleTemplate = async (id) => {
         }
         toast.value = { type: json.data.status, message: json.data.message };
     } catch (error) {
-        toast.value = { type: "failed", message: error.message };
+        toast.value = { type: "failed", message: error.response.data.message ?? error.message };
     } finally {
         if (id !== undefined) {
             exampleTemplateOptionColumnTable.value = { ...exampleTemplateOptionColumnTable, [id]: { deletedButtonFlag: false } };
